@@ -14,3 +14,19 @@ hdr = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKi
 
 
 site = BeautifulSoup(urllib2.urlopen("http://www.20min.ch", timeout=10), "html.parser")
+
+
+class Downloader():
+    pass
+
+def get_urls_from_index(index_url):
+    """
+    """
+    URLs = []
+    return URLs
+
+def get_data_from_bge_url(bge_url):
+    """
+    """
+    data = {}
+    return data
