@@ -1,5 +1,3 @@
-# http://python-guide-pt-br.readthedocs.io/en/latest/writing/tests/
-
 import unittest
 import datetime
 import re
@@ -21,35 +19,36 @@ class TestIndexBuildUrl(unittest.TestCase):
     def test_wrong_volume_given(self):
         with self.assertRaises(ValueError):
             build_index_url(1997, '0')
+            build_index_url(1997, 'IIII')
             build_index_url(1997, 'VI')
 
-    # Test is incomplete
     def test_returned_url(self):
         year = datetime.datetime.now().year
-        self.assertEqual(build_index_url(year)[:25], 'http://relevancy.bger.ch/')
+        for vol in ['I', 'II', 'III', 'IV', 'V']
+            self.assertTrue(build_index_url(year, vol).startswith('http://relevancy.bger.ch/php/clir/http/index_atf.php'))
 
+# Test depends on external API! (no mocking)
 class TestGetBGEUrlsFromIndex(unittest.TestCase):
     def test_no_valid_url_given(self):
         with self.assertRaises(ValueError):
             get_bge_urls_from_index('ftp://foo.com')
 
     def test_index_empty(self):
-        index_url = build_index_url(2007, 'I')
+        year = datetime.datetime.now().year
+        index_url = build_index_url(year, 'I')
         # Returned list should be empty
         self.assertFalse(get_bge_urls_from_index(index_url))
 
     def test_if_url(self):
-        index_url = build_index_url(2007, 'I')
+        year = datetime.datetime.now().year
+        index_url = build_index_url(year, 'I')
         bge_urls = get_bge_urls_from_index(index_url)
 
         for url in bge_urls:
-            # matches http://, https://, ftp://
-            self.assertTrue(re.match(r'^(?:http|ftp)s?://'))
+            self.assertTrue(url.startswith('http://relevancy.bger.ch/php/clir/http/index.php'))
 
 
-
-
-
+# Test depends on external API! (no mocking)
 class TestDownloadBGEFromUrl(unittest.TestCase):
     def test_no_valid_url_given(self):
         with self.assertRaises(ValueError):
@@ -59,6 +58,7 @@ class TestDownloadBGEFromUrl(unittest.TestCase):
         # TODO
         self.skipTest('not sure how data will look yet')
         pass
+
 
 class SaveData(unittest.TestCase):
     def test_is_file_saved(self):
