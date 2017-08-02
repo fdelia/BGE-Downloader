@@ -24,8 +24,9 @@ class TestIndexBuildUrl(unittest.TestCase):
 
     def test_returned_url(self):
         year = datetime.datetime.now().year
-        for vol in ['I', 'II', 'III', 'IV', 'V']
+        for vol in ['I', 'II', 'III', 'IV', 'V']:
             self.assertTrue(build_index_url(year, vol).startswith('http://relevancy.bger.ch/php/clir/http/index_atf.php'))
+
 
 # Test depends on external API! (no mocking)
 class TestGetBGEUrlsFromIndex(unittest.TestCase):
@@ -36,16 +37,23 @@ class TestGetBGEUrlsFromIndex(unittest.TestCase):
     def test_index_empty(self):
         year = datetime.datetime.now().year
         index_url = build_index_url(year, 'I')
-        # Returned list should be empty
-        self.assertFalse(get_bge_urls_from_index(index_url))
+        bge_urls = get_bge_urls_from_index(index_url)
+        # Returned list is list and should be empty
+        self.assertIsInstance(bge_urls, list)
+        self.assertFalse(bge_urls)
 
     def test_if_url(self):
         year = datetime.datetime.now().year
         index_url = build_index_url(year, 'I')
         bge_urls = get_bge_urls_from_index(index_url)
 
-        for url in bge_urls:
-            self.assertTrue(url.startswith('http://relevancy.bger.ch/php/clir/http/index.php'))
+        if (type(bge_urls) == list and len(bge_urls) > 0):
+            for url in bge_urls:
+                self.assertTrue(url.startswith('http://relevancy.bger.ch/php/clir/http/index.php'))
+        else:
+            # Returned list is list and should be empty
+            self.assertIsInstance(bge_urls, list)
+            self.assertFalse(bge_urls)
 
 
 # Test depends on external API! (no mocking)
