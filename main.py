@@ -4,19 +4,31 @@ import argparse
 import datetime
 import requests
 import json
+import re
+import urllib
+# import csv
+import numpy as np
 from bs4 import BeautifulSoup
 
 
-# Configs
-hdr = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
+# Configs 
+# TODO
+headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
        # 'Accept-Charset': 'de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4,id;q=0.2,nl;q=0.2',
        'Accept-Encoding': 'none',
        'Accept-Language': 'de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4,id;q=0.2,nl;q=0.2',
        'Connection': 'keep-alive'}
+DEBUG = False
+# req = urllib.request.Request(
+#     url, 
+#     data=None, 
+#     headers={
+#         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+#     }
+# )
+# f = urllib.request.urlopen(req)
 
-
-#site = BeautifulSoup(urllib2.urlopen("http://www.20min.ch", timeout=10), "html.parser")
 
 def build_url(year, volume='I'):
     """
@@ -31,17 +43,58 @@ def build_url(year, volume='I'):
     return 'http://relevancy.bger.ch/php/clir/http/index_atf.php?year={}&volume={}&lang=de&zoom=&system=clir'.format(year_nr, volume)
 
 
-def download_data_from_url(url):
+def download_data(year, vol):
     """
     """
+    url = build_url(year, vol)
     data = [] # rows
+
+    html = str(urllib.request.urlopen(url, timeout=10).read())
+    links = re.findall(r'(?<=<a href=")[^"]*', html)
+    for link in links:
+        if "/php/clir/http/index.php?highlight_docid=atf%3A%2F%2" in link:
+            link = link.replace("&amp;", "&")
+            data.append(download_bge('http://relevancy.bger.ch' + link, year, vol))
+
     return data
+
+def download_bge(url, year, vol):
+    """
+    """
+    if DEBUG: print(url)
+    html = str(urllib.request.urlopen(url, timeout=10).read())
+    soup = BeautifulSoup(html, "html.parser")
+
+    bge_name = soup.title.string
+
+    refs_bges = ""; refs_artikel = ""
+    if soup.find("div", {"id": "highlight_references"}):
+        refs = soup.find("div", {"id": "highlight_references"}).find_all("p")
+        for ref in refs:
+            if "Artikel" in ref.text:
+                refs_artikel = ref.text.replace('   ', '').replace('mehr...', '')
+                if DEBUG: print(refs_artikel)
+
+            if "BGE:" in ref.text:
+                refs_bges = ref.text.replace('   ', '').replace('mehr...', '')
+                if DEBUG: print(refs_bges)
+
+    content = soup.find("div", {"class": "content"}).text
+
+    return [year, vol, bge_name, refs_bges, refs_artikel, content]
 
 
 def save_data(data, filename):
     """
     """
-    pass
+    # text and other data (eg. references, BGE name)
+    print(len(data))
+    f = open(filename, 'w')
+    for d in data:
+        row = "','".join(d)
+        row = "'" + row + "'"
+        f.write(row + '\n')
+    f.close()
 
 
 def main(argv):
@@ -79,15 +132,17 @@ def main(argv):
 
 
     # Get data
-    data = []
     for year in years:
-        for vol in volumes:
-            url = build_url(year, vol)
-            data += download_data_from_url(url)
+        data = []
+        print("Year {}".format(year))
 
+        for vol in volumes:     
+            data += download_data(year, vol)
+            # print("    Vol {}: {} rows".format(vol, len(data[-1])))
+        print("    {} rows".format(len(data)))
 
-    # Save data
-    save_data(data, args.output)
+        # Save data
+        save_data(data, args.output)
 
 
 if __name__ == "__main__":
