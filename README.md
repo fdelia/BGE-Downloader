@@ -2,6 +2,9 @@
 
 &lt;work in progress&gt;
 
+* d_leitentscheide.py: Für die Leitentscheide; seit dem Jahr 1954.
+* d_all.py: Für alle aufgenommenen Entscheide; seit dem Jahr 2000.
+
 ### Quellen
 * Index der Bundesgerichts- (BGE) und EGMR-Entscheide -> [hier](http://relevancy.bger.ch/php/clir/http/index_atf.php?lang=de)
 * evt. [Liste der Neuheiten](http://relevancy.bger.ch/php/aza/http/index_aza.php?date=20170725&lang=de&mode=news), geht jeweils nur einige Tage zurück
