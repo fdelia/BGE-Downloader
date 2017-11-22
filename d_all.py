@@ -84,7 +84,6 @@ def download_from_list(year, month, day):
             data.append(download_bge(url, 
                 [str(year), str(month), str(day), entscheid_datum, entscheid_nr, sachgebiet, sachgebiet_desc]))
 
-
     return data
 
 
@@ -111,7 +110,7 @@ def download_bge(url, *args):
 
     content = soup.find("div", {"class": "content"}).text
 
-    return args + (content,)
+    return args[0] + [content]
 
 
 def save_data(data, filename):
@@ -120,6 +119,7 @@ def save_data(data, filename):
     # text and other data (eg. references, BGE name)
     f = open(filename, 'a')
     for d in data:
+        # print(d)
         row = "','".join(d)
         row = "'" + row + "'"
         f.write(row + '\n')
@@ -132,7 +132,7 @@ def main(argv):
     parser.add_argument('--all', action='store_true', help='downloads all decisions, overwrites other download parameters')
     parser.add_argument('-y', '--year', action='store', help='downloads given year')
     # parser.add_argument('-f', '--from', action='store', help='min year')
-    parser.add_argument('-v', '--volume', action='store', help='downloads given volume (default: all)')
+    parser.add_argument('-m', '--from_month', action='store', help='start at month (default: 1)', default=1)
     parser.add_argument('-o', '--output', action='store', default='output.csv', help='save as filename')
     args = parser.parse_args()
 
@@ -151,30 +151,38 @@ def main(argv):
     if args.year is not None:
         years = [args.year]
     else:
-        years = range(1954, datetime.datetime.now().year + 1)
+        years = range(2000, datetime.datetime.now().year + 1)
 
-    if args.volume:
-        volumes = [args.volume]
-    else:
-        volumes = ['I', 'II', 'III', 'IV', 'V']
+    # if args.volume:
+    #     volumes = [args.volume]
+    # else:
+    #     volumes = ['I', 'II', 'III', 'IV', 'V']
+
+    if args.from_month not in list(range(1, 13)):
+        print('Month must be in range from 1 to 12.')
+        sys.exit(2)
 
 
     # Get data
-    years = [2017]
+    #years = [2017]
     for year in years:
-        for month in range(1, 13):
+        for month in range(args.from_month, 13):
             print('{} {:02}'.format(year, month))
             data = []
             for day in range(1, 32):
                 print('    {:02}'.format(day))
-                d = download_from_list(year, month, day)
-                if d:
-                    data += d
+                try:
+                    d = download_from_list(year, month, day)
+                    if d:
+                        data += d
+                except:
+                    print('    Error, passing')
+                    pass
+                
             print("    {} rows".format(len(data)))
 
             # Save data
             save_data(data, "data/publ_{}_{}.csv".format(year, month))
-            break
 
 
 if __name__ == "__main__":
