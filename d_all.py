@@ -157,7 +157,7 @@ def main(argv):
     #     volumes = [args.volume]
     # else:
     #     volumes = ['I', 'II', 'III', 'IV', 'V']
-
+    args.from_month = int(args.from_month)
     if args.from_month not in list(range(1, 13)):
         print('Month must be in range from 1 to 12.')
         sys.exit(2)
