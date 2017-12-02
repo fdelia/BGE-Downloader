@@ -7,7 +7,7 @@
 
 ### Quellen
 * Index der Bundesgerichts- (BGE) und EGMR-Entscheide -> [hier](http://relevancy.bger.ch/php/clir/http/index_atf.php?lang=de)
-* evt. [Liste der Neuheiten](http://relevancy.bger.ch/php/aza/http/index_aza.php?date=20170725&lang=de&mode=news), geht jeweils nur einige Tage zurück
+* [Liste der Neuheiten, einzelner Tag](http://relevancy.bger.ch/php/aza/http/index_aza.php?date=20170725&lang=de&mode=news)
 
 ### Bänder und Abteilungen
 * Band I: verschiedene Abteilungen
