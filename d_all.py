@@ -11,7 +11,7 @@ import numpy as np
 from bs4 import BeautifulSoup
 
 
-# Configs 
+# Configs
 # TODO
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -21,8 +21,8 @@ headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleW
        'Connection': 'keep-alive'}
 DEBUG = False
 # req = urllib.request.Request(
-#     url, 
-#     data=None, 
+#     url,
+#     data=None,
 #     headers={
 #         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
 #     }
@@ -59,13 +59,19 @@ DEBUG = False
 #     return data
 
 def download_from_list(year, month, day):
+    global headers
+
     # Give list data into download BGE
     url = 'https://www.bger.ch/ext/eurospider/live/de/php/aza/http/index_aza.php?date={}{:02}{:02}&lang=de&mode=news'.format(year, month, day)
-    req = urllib.request.urlopen(url, timeout=10)
+    request = urllib.request.Request(url)#.urlopen(url, timeout=10)
+    for header, value in headers:
+        request.add_header(header, value)
+
+    resp = urllib.urlopen(request)
     if req.getcode() != 200:
         return False
 
-    soup = BeautifulSoup(req.read(), "html.parser")
+    soup = BeautifulSoup(resp.read(), "html.parser")
     tables = soup.findAll('table')
     if len(tables) < 2:
         return False
@@ -81,7 +87,7 @@ def download_from_list(year, month, day):
         else:
             sachgebiet_desc = tr.text.replace('\n', '')
 
-            data.append(download_bge(url, 
+            data.append(download_bge(url,
                 [str(year), str(month), str(day), entscheid_datum, entscheid_nr, sachgebiet, sachgebiet_desc]))
 
     return data
@@ -178,7 +184,7 @@ def main(argv):
                 except:
                     print('    Error, passing')
                     pass
-                
+
             print("    {} rows".format(len(data)))
 
             # Save data
